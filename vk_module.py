@@ -5,6 +5,7 @@ import array
 import select
 import sys
 import curses
+import keyboard
 from vk_my_auth import get_access_token
 from vk_my_auth import auth
 
@@ -30,18 +31,26 @@ def searchTitle(title_array, new_title):
     title_array.append(new_title)
     return True
 
-myscreen = curses.initscr()
+#myscreen = curses.initscr()
 title = "ss"
 while True: 
-    myscreen.border(0) 
-    myscreen.refresh() 
-    curses.noecho()
-    myscreen.addstr(title.decode("ascii") + "\n")
-    print myscreen.getch()
-    #myscreen.clear()
-    curses.endwin()
+    #myscreen.refresh() 
+    #myscreen.addstr("|" + title.decode("ascii") + "\n")
+    #key_control = myscreen.getkey()
+
+    #if key_control  == curses.KEY_UP:
+    #    myscreen.addstr("key up pressed")
+    #else:
+    #    myscreen.addstr("key up didn't press")
+
+    #curses.endwin()
+
     #print sys.stdin.read(1)
     #sys.stdout.flush()
+
+    keyboard.wait(keyboard.KEY_UP)
+    print "you presed"
+
     time.sleep(0.3);
     message_list = vkapi.messages.get(time_offset = 0, count = 200)
     for message in message_list:
@@ -57,6 +66,7 @@ while True:
 
                 if searchTitle(title_array, title):
                     print title
+
 #                print message['title'].rjust(25), message_user[0]['first_name'].rjust(10), message_user[0]['last_name'].rjust(10)
 #                print(message['body'])
 
