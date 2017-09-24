@@ -16,4 +16,4 @@ _my_command() { #объявляем функцию, которую будем п
 	fi
 }
 complete -F _my_command vk_module.py
-
+complete -F _my_command vk

@@ -10,9 +10,23 @@ def get_access_token():
     regs = vk.AuthSession(vk_my_auth.m_client_id, vk_my_auth.m_email, vk_my_auth.m_password, scope = 'messages')
     return regs.get_access_token()
 
-session = vk.AuthSession(access_token = get_access_token())
-vkapi = vk.API(session, v='5.68')
-
+def login():
+    try:
+            f = open('token', 'r')
+    except IOError as e:
+            f = open('token', 'w')
+            f.close()
+            f = open('token', 'r')
+    if f.read == '':
+        session = vk.AuthSession(access_token = f.read())
+        f.close();
+    else:
+        f.close()
+        f = open('token', 'w')
+        token = get_access_token();
+        f.write(token)
+        session = vk.AuthSession(access_token = token)
+    return vk.API(session, v='5.68')
 
 def update_user_list(user_list):
     f = open('users', 'w')
@@ -26,18 +40,29 @@ def update_user_list(user_list):
         time.sleep(0.3)
     f.close()
 
-def find_user_name(user_obj):
+def find_user_name(message):
     f = open('users', 'r')
+    new_id = ''
+    if message['title'] == '':
+        user_obj = vkapi.users.get(user_ids = message['user_id'])
+        new_id = user_obj[0]['id']
+    else :
+        new_id = message['chat_id']
+
     for user_name in f.read().split(' '):
         if user_name != '':
-            if user_name.split('_')[2] == str(user_obj[0]['id']):
+            if user_name.split('_')[2] == str(new_id):
                 return
     f.close()
-    if user_obj[0]['title'] != '':
+    if message['title'] != '':
         f = open('users', 'a')
-        f.write( 'Group_' + user_obj[0]['title'].replace(' ', '').replace('_', '') \
-                + '_' + str(user_obj[0]['id']) + ' ')
+        f.write( 'Group_' + message['title'].replace(' ', '').replace('_', '') \
+                + '_' + str(2000000000 + message['chat_id']) + ' ')
+        f.write( message['title'].replace(' ', '').replace('_', '') + '_Group' \
+                + '_' + str(2000000000 + message['chat_id']) + ' ')
+
         f.close()
+        return
 
     f = open('users', 'a')
     f.write(user_obj[0]['first_name'] + '_' + user_obj[0]['last_name'] + '_' + \
@@ -55,11 +80,13 @@ def get_messages():
             if message['read_state'] != 1:
                 time.sleep(0.3);
                 message_user = vkapi.users.get(user_ids = message['user_id'])
-                find_user_name(message_user)
+                find_user_name(message)
                 title = message['title'].ljust(20) +  '|' +\
                     message_user[0]['first_name'].ljust(10) + ' ' +\
                     message_user[0]['last_name'].ljust(15)
                 print(time.strftime("%D %H:%M", time.localtime(int(message['date']))), title, '|', message['body'])
+
+vkapi = login()
 
 if (len(sys.argv) > 1):
     if (sys.argv[1] == 'get'):
@@ -70,10 +97,10 @@ if (len(sys.argv) > 1):
         update_user_list(user_list)
 
     if (sys.argv[1] == 'send'):
-        vkapi.messages.send(user_id=sys.argv[2].split('_')[2], message = sys.argv[3])
+        vkapi.messages.send(peer_id=sys.argv[2].split('_')[2], message = sys.argv[3])
 
     if (sys.argv[1] == 'clear'):
-        vkapi.messages.markAsRead(peer_id='96253633', answered=1)
+        vkapi.messages.markAsRead(peer_id=sys.argv[2].split('_')[2], answered=1)
 else :
     print('Enter a command!')
     print('update : Update friend list for hints')
