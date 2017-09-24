@@ -1,4 +1,7 @@
 *.*~
 *.swp
+*.swo
 vk_my_auth.py
 *.pyc
+users
+.*
